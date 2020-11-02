@@ -37,39 +37,43 @@ get() {
 	
 	# Get video title, used for the download messages
 	local title=$(/usr/bin/env youtube-dl -s -e $1)
-	
-	# Change directory to the target directory (~/Videos)
-	cd $target_dir
-	
-	# Check verbose flag state value and define youtube-dl arguments
-	if [ "${verbose}" -eq 2 ]; then
-		local cmd_argv="-c --recode-video mp4 -o %(title)s.%(ext)s"
-	else
-		local cmd_argv="-q -c --recode-video mp4 -o %(title)s.%(ext)s"
-	fi
-	
-	# Send download default messages:
-	echo -e "${GRC}▶ ${NC}Get: ${CBC}${title}${NC}"
-	echo -e "${GRC}▶ ${NC}Save to: ${CC}${target_dir}${NC}"
-	
-	# Check verbose flag are different then 0 (default)
-	# and show full youtube-dl command as message
-	if [ "${verbose}" -eq 2 -o "${verbose}" -eq 1 ]; then
-		echo "/usr/bin/env youtube-dl ${cmd_argv} \"$1\""
-	fi
 
-	# Execute youtube-dl with defined arguments
-	/usr/bin/env youtube-dl ${cmd_argv} "$1"
-	
-	# Check youtube-dl return code
-	if [ $? -eq 0 ]; then
-		count_c=$((count_c+1)) # Success
+	if [[ "$title" ]]; then
+		# Change directory to the target directory (~/Videos)
+		cd $target_dir
+		
+		# Check verbose flag state value and define youtube-dl arguments
+		if [ "${verbose}" -eq 2 ]; then
+			local cmd_argv="-c --recode-video mp4 -o %(title)s.%(ext)s"
+		else
+			local cmd_argv="-q -c --recode-video mp4 -o %(title)s.%(ext)s"
+		fi
+		
+		# Send download default messages:
+		echo -e "${GRC}▶ ${NC}Get: ${CBC}${title}${NC}"
+		echo -e "${GRC}▶ ${NC}Save to: ${CC}${target_dir}${NC}"
+		
+		# Check verbose flag are different then 0 (default)
+		# and show full youtube-dl command as message
+		if [ "${verbose}" -eq 2 -o "${verbose}" -eq 1 ]; then
+			echo "/usr/bin/env youtube-dl ${cmd_argv} \"$1\""
+		fi
+
+		# Execute youtube-dl with defined arguments
+		/usr/bin/env youtube-dl ${cmd_argv} "$1"
+		
+		# Check youtube-dl return code
+		if [ $? -eq 0 ]; then
+			count_c=$((count_c+1)) # Success
+		else
+			count_f=$((count_f+1)) # Fail
+		fi
+		
+		# Change the directory to the original directory (Formerly current)
+		cd $current_dir
 	else
 		count_f=$((count_f+1)) # Fail
 	fi
-	
-	# Change the directory to the original directory (Formerly current)
-	cd $current_dir
 }
 
 # Print help message function
@@ -90,7 +94,7 @@ count_f=0 # Count downloads failed (Fail attempt)
 
 # Script info:
 readonly EXEC_NAME=$0 # Script filename
-readonly RELEASE="1.0.0"
+readonly RELEASE="1.1.0"
 
 # Message colors:
 readonly BC="$(printf '\033[0;34m')" # Blue color
